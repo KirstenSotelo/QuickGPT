@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ChatGPT Widget</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 10px;
+      width: 300px;
+    }
+    textarea {
+      width: 100%;
+      resize: none;
+    }
+    #output {
+      margin-top: 10px;
+      white-space: pre-wrap;
+      background: #f3f3f3;
+      padding: 8px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h3>Ask ChatGPT</h3>
+  <textarea id="input" rows="4" placeholder="Type your message..."></textarea><br>
+  <button id="send">Send</button>
+  <div id="output">Response will appear here.</div>
+
+  <script src="config.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

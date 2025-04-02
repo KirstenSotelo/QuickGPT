@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${OPENAI_API_KEY}` // coming from config.js
+            "Authorization": `Bearer ${OPENAI_API_KEY}`
           },
           body: JSON.stringify({
             model: "gpt-3.5-turbo",
@@ -30,15 +30,22 @@ document.addEventListener("DOMContentLoaded", () => {
   
         const data = await response.json();
   
-        if (response.ok) {
-          const result = data.choices?.[0]?.message?.content;
-          outputEl.textContent = result || "No response.";
-        } else {
-          console.error("OpenAI API error:", data);
-          outputEl.textContent = "Error: " + (data.error?.message || "Unknown error.");
+        if (!response.ok) {
+          outputEl.textContent = "API error: " + (data.error?.message || "Unknown error.");
+          console.error("OpenAI API error", data);
+          return;
         }
+  
+        const message = data.choices?.[0]?.message?.content;
+        if (message) {
+          outputEl.textContent = message;
+        } else {
+          outputEl.textContent = "No response from model.";
+          console.warn("Unexpected API response:", data);
+        }
+  
       } catch (err) {
-        console.error("Fetch error:", err);
+        console.error("Network/API error:", err);
         outputEl.textContent = "Failed to connect to API.";
       }
     });

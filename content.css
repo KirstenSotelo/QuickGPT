@@ -44,10 +44,11 @@
 /* Popup Container */
 #chatgpt-popup {
   position: fixed;
-  bottom: 85px;
+  top: 100px;
   right: 20px;
-  width: 90vw;
-  max-width: 380px;
+  width: 380px;
+  height: 300px;
+  max-width: 90vw;
   background-color: var(--chatgpt-bg);
   color: var(--chatgpt-text);
   border-radius: 16px;
@@ -57,14 +58,30 @@
   font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
   padding: 16px;
   box-sizing: border-box;
-  max-height: 80vh;
-  overflow-y: auto;
-  overflow-x: hidden;
+  max-height: 100vh;
   animation: chatgpt-popup-in 0.3s ease;
   border: 1px solid var(--chatgpt-border);
   display: flex;
   flex-direction: column;
+  resize: both;
+  overflow: hidden;
+  min-width: 280px;
+  min-height: 300px;
 }
+
+/* Sleek Draggable Header 
+#chatgpt-header {
+  cursor: move;
+  background: rgba(255, 255, 255, 0.05);
+  font-weight: 500;
+  padding: 6px 10px;
+  font-size: 13px;
+  user-select: none;
+  border-bottom: 1px solid var(--chatgpt-border);
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+  */
 
 @keyframes chatgpt-popup-in {
   from {
@@ -142,10 +159,8 @@
   border-radius: 10px;
   padding: 14px;
   color: var(--chatgpt-text);
+  height: 300px;
   font-size: 15px;
-  max-height: 300px;
-  overflow-y: auto;
-  overflow-x: hidden;
   white-space: pre-wrap;
   border: 1px solid var(--chatgpt-border);
   line-height: 1.5;
@@ -155,33 +170,21 @@
   box-sizing: border-box;
   margin: 0;
   flex: 1;
+  overflow: auto;
 }
 
-/* Scrollbar Styling */
+/* Hide scrollbars */
+#chatgpt-popup,
+#chatgpt-input,
+#chatgpt-response {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
 #chatgpt-popup::-webkit-scrollbar,
 #chatgpt-input::-webkit-scrollbar,
 #chatgpt-response::-webkit-scrollbar {
-  width: 8px;
-}
-
-#chatgpt-popup::-webkit-scrollbar-track,
-#chatgpt-input::-webkit-scrollbar-track,
-#chatgpt-response::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-}
-
-#chatgpt-popup::-webkit-scrollbar-thumb,
-#chatgpt-input::-webkit-scrollbar-thumb,
-#chatgpt-response::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
-}
-
-#chatgpt-popup::-webkit-scrollbar-thumb:hover,
-#chatgpt-input::-webkit-scrollbar-thumb:hover,
-#chatgpt-response::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  display: none;
 }
 
 /* Loading Animation */
@@ -212,11 +215,7 @@
   }
 }
 
-
-
-
-/* MODAL                 ------------------------- */
-
+/* Modal */
 #chatgpt-modal {
   position: fixed;
   top: 30%;
@@ -268,4 +267,35 @@
 
 #chatgpt-modal #modal-cancel:hover {
   background-color: #777;
+}
+
+.resize-handle {
+  position: absolute;
+  z-index: 99999;
+  background: transparent;
+}
+
+.resize-handle:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.resize-handle.top { top: -4px; left: 0; width: 100%; height: 8px; cursor: n-resize; }
+.resize-handle.bottom { bottom: -4px; left: 0; width: 100%; height: 8px; cursor: s-resize; }
+.resize-handle.left { left: -4px; top: 0; width: 8px; height: 100%; cursor: w-resize; }
+.resize-handle.right { right: -4px; top: 0; width: 8px; height: 100%; cursor: e-resize; }
+
+.resize-handle.top-left { top: -4px; left: -4px; width: 12px; height: 12px; cursor: nw-resize; }
+.resize-handle.top-right { top: -4px; right: -4px; width: 12px; height: 12px; cursor: ne-resize; }
+.resize-handle.bottom-left { bottom: -4px; left: -4px; width: 12px; height: 12px; cursor: sw-resize; }
+.resize-handle.bottom-right { bottom: -4px; right: -4px; width: 12px; height: 12px; cursor: se-resize; }
+
+/* Hide scrollbars */
+#chatgpt-popup, #chatgpt-input, #chatgpt-response {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+#chatgpt-popup::-webkit-scrollbar,
+#chatgpt-input::-webkit-scrollbar,
+#chatgpt-response::-webkit-scrollbar {
+  display: none;
 }

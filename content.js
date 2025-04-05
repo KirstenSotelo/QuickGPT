@@ -1,108 +1,237 @@
 console.log("ChatGPT content script loaded.");
 
-// Inject floating button
+// Create floating button
 const button = document.createElement("button");
 button.id = "chatgpt-float-btn";
 button.textContent = "💬";
 document.body.appendChild(button);
 
-// Inject popup
+// Create popup
 const popup = document.createElement("div");
 popup.id = "chatgpt-popup";
 popup.innerHTML = `
   <textarea id="chatgpt-input" rows="3" placeholder="Ask ChatGPT..."></textarea>
   <button id="chatgpt-send">Send</button>
   <div id="chatgpt-response">Response will appear here.</div>
-  <div id="chatgpt-modal" style="
-    display: none;
-    position: fixed;
-    top: 30%;
-    left: 50%;
-    transform: translate(-50%, -30%);
-    background: #222;
-    color: #fff;
-    padding: 20px;
-    z-index: 99999;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-    max-width: 300px;
-    text-align: center;
-    font-family: sans-serif;
-  ">
+  <div id="chatgpt-modal">
     <p>⚠️ <strong>ChatGPT Widget</strong><br><br>No API key is set.<br><br>Would you like to open settings?</p>
-    <button id="modal-ok" style="margin: 5px;">🔧 Open Settings</button>
-    <button id="modal-cancel" style="margin: 5px;">Cancel</button>
+    <button id="modal-ok">🔧 Open Settings</button>
+    <button id="modal-cancel">Cancel</button>
   </div>
 `;
 document.body.appendChild(popup);
 
-// Toggle popup visibility
+// Add resize handles
+const edges = ["top", "bottom", "left", "right"];
+const corners = ["top-left", "top-right", "bottom-left", "bottom-right"];
+[...edges, ...corners].forEach(pos => {
+  const handle = document.createElement("div");
+  handle.className = `resize-handle ${pos}`;
+  popup.appendChild(handle);
+});
+
+// Position popup
+function positionPopupNearButton() {
+  const rect = button.getBoundingClientRect();
+  const popupWidth = 380;
+  const popupHeight = 300;
+  let left = rect.left + button.offsetWidth - popupWidth;
+  let top = rect.bottom + 10;
+
+  const screenW = window.innerWidth;
+  const screenH = window.innerHeight;
+
+  left = Math.max(10, Math.min(left, screenW - popupWidth - 10));
+  top = Math.max(10, Math.min(top, screenH - popupHeight - 90));
+
+  popup.style.left = `${left}px`;
+  popup.style.top = `${top}px`;
+}
+positionPopupNearButton();
+
+// Toggle popup
 popup.style.display = "none";
 button.addEventListener("click", () => {
-  popup.style.display = popup.style.display === "none" ? "block" : "none";
-  if (popup.style.display === "block") {
+  popup.style.display = popup.style.display === "none" ? "flex" : "none";
+  if (popup.style.display === "flex") {
     document.getElementById("chatgpt-input").focus();
   }
 });
 
-// Show custom modal
+// Modal for API key
 function showApiKeyModal() {
   const modal = document.getElementById("chatgpt-modal");
   modal.style.display = "block";
-
   document.getElementById("modal-ok").onclick = () => {
     chrome.runtime.sendMessage({ type: "open_options_page" });
     modal.style.display = "none";
   };
-
   document.getElementById("modal-cancel").onclick = () => {
     modal.style.display = "none";
   };
 }
 
-// Send prompt to background.js
+// Send prompt
 function sendPrompt(promptText) {
   const input = document.getElementById("chatgpt-input");
-  const responseEl = document.getElementById("chatgpt-response");
-  const sendButton = document.getElementById("chatgpt-send");
+  const response = document.getElementById("chatgpt-response");
+  const sendBtn = document.getElementById("chatgpt-send");
 
   input.value = promptText;
-  responseEl.textContent = "Thinking...";
-  sendButton.disabled = true;
+  response.textContent = "Thinking...";
+  sendBtn.disabled = true;
 
   chrome.runtime.sendMessage({ type: "chatgpt_query", prompt: promptText }, (res) => {
     if (chrome.runtime.lastError) {
-      console.error("Runtime error:", chrome.runtime.lastError.message);
-      responseEl.textContent = "Extension error.";
+      response.textContent = "Extension error.";
     } else if (res.success) {
-      responseEl.textContent = res.reply;
+      response.textContent = res.reply;
     } else {
-      responseEl.textContent = "Error: " + (res.error || "Unknown error.");
+      response.textContent = "Error: " + (res.error || "Unknown error.");
       if ((res.error || "").includes("No API key")) {
         showApiKeyModal();
       }
     }
 
-    sendButton.disabled = false;
-    responseEl.scrollTop = responseEl.scrollHeight;
+    sendBtn.disabled = false;
+    response.scrollTop = response.scrollHeight;
   });
 }
 
 // Manual send
 document.getElementById("chatgpt-send").addEventListener("click", () => {
-  const input = document.getElementById("chatgpt-input").value.trim();
-  if (input) {
-    sendPrompt(input);
+  const val = document.getElementById("chatgpt-input").value.trim();
+  if (val) {
+    sendPrompt(val);
   } else {
     document.getElementById("chatgpt-response").textContent = "Please enter a message.";
   }
 });
 
-// Support context menu injection
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+// Handle context menu prompt
+chrome.runtime.onMessage.addListener((msg) => {
   if (msg.type === "context_prompt") {
-    popup.style.display = "block";
+    popup.style.display = "flex";
     document.getElementById("chatgpt-input").value = msg.prompt;
     sendPrompt(msg.prompt);
   }
+});
+
+// Draggable logic (except on handles and input)
+let isDragging = false;
+let offsetX, offsetY;
+popup.addEventListener("mousedown", (e) => {
+  if (e.target.classList.contains("resize-handle") || e.target.closest(".resize-handle")) return;
+  if (["TEXTAREA", "BUTTON"].includes(e.target.tagName)) return;
+
+  isDragging = true;
+  offsetX = e.clientX - popup.offsetLeft;
+  offsetY = e.clientY - popup.offsetTop;
+});
+document.addEventListener("mousemove", (e) => {
+  if (!isDragging) return;
+  popup.style.left = `${e.clientX - offsetX}px`;
+  popup.style.top = `${e.clientY - offsetY}px`;
+});
+document.addEventListener("mouseup", () => { isDragging = false; });
+
+// Corner + edge resize logic
+let resizing = false;
+let currentHandle = null;
+let startX, startY, startW, startH, startLeft, startTop;
+
+popup.querySelectorAll(".resize-handle").forEach(handle => {
+  handle.addEventListener("mousedown", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    resizing = true;
+    currentHandle = handle;
+    const rect = popup.getBoundingClientRect();
+    startX = e.clientX;
+    startY = e.clientY;
+    startW = rect.width;
+    startH = rect.height;
+    startLeft = rect.left;
+    startTop = rect.top;
+  });
+});
+
+document.addEventListener("mousemove", (e) => {
+  if (!resizing || !currentHandle) return;
+
+  const dx = e.clientX - startX;
+  const dy = e.clientY - startY;
+
+  let newW = startW;
+  let newH = startH;
+  let newLeft = startLeft;
+  let newTop = startTop;
+
+  const cls = currentHandle.classList;
+
+  // Corner Resizing
+  if (cls.contains("top-left")) {
+    newW = startW - dx;
+    newLeft = startLeft + dx;
+    newH = startH - dy;
+    newTop = startTop + dy;
+  } else if (cls.contains("top-right")) {
+    newW = startW + dx;
+    newH = startH - dy;
+    newTop = startTop + dy;
+  } else if (cls.contains("bottom-left")) {
+    newW = startW - dx;
+    newLeft = startLeft + dx;
+    newH = startH + dy;
+  } else if (cls.contains("bottom-right")) {
+    newW = startW + dx;
+    newH = startH + dy;
+  }
+  // Edge resizing
+  else {
+    if (cls.contains("right")) newW = startW + dx;
+    if (cls.contains("left")) {
+      newW = startW - dx;
+      newLeft = startLeft + dx;
+    }
+    if (cls.contains("bottom")) newH = startH + dy;
+    if (cls.contains("top")) {
+      newH = startH - dy;
+      newTop = startTop + dy;
+    }
+  }
+
+  // Enforce minimum size
+  newW = Math.max(280, newW);
+  newH = Math.max(200, newH);
+
+  popup.style.width = `${newW}px`;
+  popup.style.height = `${newH}px`;
+  popup.style.left = `${newLeft}px`;
+  popup.style.top = `${newTop}px`;
+});
+
+
+document.addEventListener("mouseup", () => {
+  resizing = false;
+  currentHandle = null;
+});
+
+// Floating button dragging
+let draggingBtn = false;
+let btnOffsetX = 0, btnOffsetY = 0;
+button.addEventListener("mousedown", (e) => {
+  draggingBtn = true;
+  btnOffsetX = e.clientX - button.offsetLeft;
+  btnOffsetY = e.clientY - button.offsetTop;
+});
+document.addEventListener("mousemove", (e) => {
+  if (!draggingBtn) return;
+  button.style.left = `${e.clientX - btnOffsetX}px`;
+  button.style.top = `${e.clientY - btnOffsetY}px`;
+  button.style.position = "fixed";
+});
+document.addEventListener("mouseup", () => {
+  draggingBtn = false;
 });

@@ -27,23 +27,17 @@ button.addEventListener("click", () => {
   }
 });
 
-// Handle send click — send prompt to background.js securely
-document.getElementById("chatgpt-send").addEventListener("click", () => {
-  const input = document.getElementById("chatgpt-input").value.trim();
+// Send prompt to background
+function sendPrompt(promptText) {
+  const input = document.getElementById("chatgpt-input");
   const responseEl = document.getElementById("chatgpt-response");
   const sendButton = document.getElementById("chatgpt-send");
 
-  if (!input) {
-    responseEl.textContent = "Please enter a message.";
-    return;
-  }
-
-  // Indicate loading state
+  input.value = promptText;
   responseEl.textContent = "Thinking...";
   sendButton.disabled = true;
 
-  // Send message to background script
-  chrome.runtime.sendMessage({ type: "chatgpt_query", prompt: input }, (res) => {
+  chrome.runtime.sendMessage({ type: "chatgpt_query", prompt: promptText }, (res) => {
     if (chrome.runtime.lastError) {
       console.error("Runtime error:", chrome.runtime.lastError.message);
       responseEl.textContent = "Error: Could not reach ChatGPT.";
@@ -53,8 +47,26 @@ document.getElementById("chatgpt-send").addEventListener("click", () => {
       responseEl.textContent = "Error: " + (res.error || "Unknown error.");
     }
 
-    // Scroll to bottom and re-enable button
     responseEl.scrollTop = responseEl.scrollHeight;
     sendButton.disabled = false;
   });
+}
+
+// Manual send via button
+document.getElementById("chatgpt-send").addEventListener("click", () => {
+  const input = document.getElementById("chatgpt-input").value.trim();
+  if (input) {
+    sendPrompt(input);
+  } else {
+    document.getElementById("chatgpt-response").textContent = "Please enter a message.";
+  }
+});
+
+// Listen for context menu prompts from background.js
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (msg.type === "context_prompt") {
+    popup.style.display = "block";
+    document.getElementById("chatgpt-input").value = msg.prompt;
+    sendPrompt(msg.prompt);
+  }
 });

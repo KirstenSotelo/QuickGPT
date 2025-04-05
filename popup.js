@@ -1,53 +1,53 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const inputEl = document.getElementById("input");
-    const sendBtn = document.getElementById("send");
-    const outputEl = document.getElementById("output");
-  
-    sendBtn.addEventListener("click", async () => {
-      const userInput = inputEl.value.trim();
-      if (!userInput) {
-        outputEl.textContent = "Please enter a prompt.";
+  const inputEl = document.getElementById("input");
+  const sendBtn = document.getElementById("send");
+  const outputEl = document.getElementById("output");
+
+  // Check if a quick prompt was passed in
+  chrome.storage.local.get("quick_prompt", (data) => {
+    if (data.quick_prompt) {
+      inputEl.value = data.quick_prompt;
+      chrome.storage.local.remove("quick_prompt");
+    }
+  });
+
+  sendBtn.addEventListener("click", () => {
+    const prompt = inputEl.value.trim();
+    if (!prompt) {
+      outputEl.textContent = "Please enter a prompt.";
+      return;
+    }
+
+    outputEl.textContent = "Thinking...";
+
+    chrome.runtime.sendMessage({ type: "chatgpt_query", prompt }, (res) => {
+      if (chrome.runtime.lastError) {
+        outputEl.textContent = "Extension error: " + chrome.runtime.lastError.message;
         return;
       }
-  
-      outputEl.textContent = "Thinking...";
-  
-      try {
-        const response = await fetch("https://api.openai.com/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${OPENAI_API_KEY}`
-          },
-          body: JSON.stringify({
-            model: "gpt-3.5-turbo",
-            messages: [
-              { role: "system", content: "You are a helpful assistant." },
-              { role: "user", content: userInput }
-            ]
-          })
-        });
-  
-        const data = await response.json();
-  
-        if (!response.ok) {
-          outputEl.textContent = "API error: " + (data.error?.message || "Unknown error.");
-          console.error("OpenAI API error", data);
-          return;
-        }
-  
-        const message = data.choices?.[0]?.message?.content;
-        if (message) {
-          outputEl.textContent = message;
+
+      if (res.success) {
+        outputEl.textContent = res.reply;
+      } else {
+        if (res.errorType === "no_api_key") {
+          outputEl.innerHTML = `
+            ⚠️ <strong>No API key is set.</strong><br><br>
+            Would you like to open the settings to add one?<br><br>
+            <button id="open-settings-btn">🔧 Open Settings</button>
+          `;
+      
+          const openBtn = document.getElementById("open-settings-btn");
+          if (openBtn) {
+            openBtn.addEventListener("click", () => {
+              chrome.runtime.openOptionsPage();
+            });
+          }
         } else {
-          outputEl.textContent = "No response from model.";
-          console.warn("Unexpected API response:", data);
+          outputEl.textContent = res.error || "Unknown error.";
         }
-  
-      } catch (err) {
-        console.error("Network/API error:", err);
-        outputEl.textContent = "Failed to connect to API.";
       }
+      
+      
     });
   });
-  
+});

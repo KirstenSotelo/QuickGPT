@@ -3,14 +3,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const sendBtn = document.getElementById("send");
   const outputEl = document.getElementById("output");
 
-  // Check if a quick prompt was passed in
-  chrome.storage.local.get("quick_prompt", (data) => {
-    if (data.quick_prompt) {
-      inputEl.value = data.quick_prompt;
-      chrome.storage.local.remove("quick_prompt");
-    }
-  });
-
   sendBtn.addEventListener("click", () => {
     const prompt = inputEl.value.trim();
     if (!prompt) {
@@ -26,27 +18,19 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      if (res.success) {
+      if (res?.success) {
         outputEl.textContent = res.reply;
       } else {
-        if (res.errorType === "no_api_key") {
-          outputEl.innerHTML = `
-            ⚠️ <strong>No API key is set.</strong><br><br>
-            Would you like to open the settings to add one?<br><br>
-            <button id="open-settings-btn">🔧 Open Settings</button>
-          `;
+        const errMsg = res?.error || "Unknown error.";
+        outputEl.textContent = "Error: " + errMsg;
       
-          const openBtn = document.getElementById("open-settings-btn");
-          if (openBtn) {
-            openBtn.addEventListener("click", () => {
-              chrome.runtime.openOptionsPage();
-            });
+        if (errMsg.includes("No API key")) {
+          const goToSettings = confirm("⚠️ No API key is set.\n\nWould you like to open the settings now?");
+          if (goToSettings) {
+            chrome.runtime.openOptionsPage();
           }
-        } else {
-          outputEl.textContent = res.error || "Unknown error.";
         }
       }
-      
       
     });
   });

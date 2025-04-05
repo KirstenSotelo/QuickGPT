@@ -211,3 +211,61 @@
     right: 15px;
   }
 }
+
+
+
+
+/* MODAL                 ------------------------- */
+
+#chatgpt-modal {
+  position: fixed;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -30%);
+  background-color: #222;
+  color: #fff;
+  padding: 20px 24px;
+  border-radius: 12px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+  z-index: 10001;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  max-width: 320px;
+  width: 90%;
+  text-align: center;
+  display: none;
+}
+
+#chatgpt-modal p {
+  margin-bottom: 16px;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+#chatgpt-modal button {
+  padding: 8px 16px;
+  margin: 0 6px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+#chatgpt-modal #modal-ok {
+  background-color: var(--chatgpt-button);
+  color: white;
+}
+
+#chatgpt-modal #modal-ok:hover {
+  background-color: var(--chatgpt-button-hover);
+}
+
+#chatgpt-modal #modal-cancel {
+  background-color: #555;
+  color: white;
+}
+
+#chatgpt-modal #modal-cancel:hover {
+  background-color: #777;
+}

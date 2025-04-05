@@ -1,25 +1,28 @@
-// Default items (used only if none are saved)
+// Default context menu items
 const defaultBuiltins = [
-  { id: "define", label: "Define this", template: 'Define the following clearly and simply:\n"*text*"' },
-  { id: "reword", label: "Reword this", template: 'Reword this to be clearer and more natural:\n"*text*"' },
-  { id: "summarize", label: "Summarize this", template: 'Summarize the following concisely:\n"*text*"' },
-  { id: "explain5", label: "Explain like I’m 5", template: 'Explain this like I’m five years old:\n"*text*"' },
-  { id: "formal", label: "Make this more formal", template: 'Rewrite this to sound more professional:\n"*text*"' },
-  { id: "casual", label: "Make this more casual", template: 'Rewrite this in a casual tone:\n"*text*"' },
-  { id: "grammar", label: "Fix grammar", template: 'Correct the grammar in this sentence:\n"*text*"' },
-  { id: "continue", label: "Continue this", template: 'Continue the following passage:\n"*text*"' }
+  { id: "define", label: "Define this", template: 'Define clearly:\n"*text*"' },
+  { id: "reword", label: "Reword this", template: 'Reword for clarity:\n"*text*"' },
+  { id: "summarize", label: "Summarize this", template: 'Summarize:\n"*text*"' },
+  { id: "explain5", label: "Explain like I’m 5", template: 'Explain like I’m five:\n"*text*"' },
+  { id: "formal", label: "Make this formal", template: 'Make this more professional:\n"*text*"' },
+  { id: "casual", label: "Make this casual", template: 'Make this casual:\n"*text*"' },
+  { id: "grammar", label: "Fix grammar", template: 'Fix grammar:\n"*text*"' },
+  { id: "continue", label: "Continue this", template: 'Continue:\n"*text*"' }
 ];
 
-// Build context menus based on user settings
+// Build context menus based on stored preferences
 function buildMenus() {
   chrome.contextMenus.removeAll(() => {
     chrome.storage.local.get(["builtin_context_items", "context_menu_items"], (data) => {
-      const builtin = Array.isArray(data.builtin_context_items) ? data.builtin_context_items : defaultBuiltins;
+      const builtins = Array.isArray(data.builtin_context_items)
+        ? data.builtin_context_items
+        : defaultBuiltins;
+
       const enabled = Array.isArray(data.context_menu_items)
         ? data.context_menu_items
-        : builtin.map(item => item.id);
+        : builtins.map(i => i.id);
 
-      builtin.forEach(item => {
+      builtins.forEach(item => {
         if (enabled.includes(item.id)) {
           chrome.contextMenus.create({
             id: item.id,
@@ -32,19 +35,21 @@ function buildMenus() {
   });
 }
 
-// Create menus on load
+// Setup context menus on install/startup
 chrome.runtime.onInstalled.addListener(buildMenus);
 chrome.runtime.onStartup.addListener(buildMenus);
 
-// Respond to right-click action
+// Context menu click handler
 chrome.contextMenus.onClicked.addListener((info, tab) => {
-  const selectedText = info.selectionText;
   const id = info.menuItemId;
+  const selectedText = info.selectionText;
 
   chrome.storage.local.get("builtin_context_items", (data) => {
-    const builtin = Array.isArray(data.builtin_context_items) ? data.builtin_context_items : defaultBuiltins;
-    const item = builtin.find(i => i.id === id);
+    const builtins = Array.isArray(data.builtin_context_items)
+      ? data.builtin_context_items
+      : defaultBuiltins;
 
+    const item = builtins.find(i => i.id === id);
     if (!item) return;
 
     const prompt = item.template.replace(/\*text\*/g, selectedText);
@@ -56,8 +61,9 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
   });
 });
 
-// Handle chatgpt_query requests
+// Listen for messages
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  // 1. Handle query to OpenAI
   if (message.type === "chatgpt_query") {
     chrome.storage.local.get(["openai_api_key", "openai_model"], (result) => {
       const apiKey = result.openai_api_key;
@@ -66,9 +72,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (!apiKey) {
         sendResponse({
           success: false,
-          errorType: "no_api_key"
+          error: "No API key set. Please add one in the extension options."
         });
-        return errorType;
+        return;
       }
 
       fetch("https://api.openai.com/v1/chat/completions", {
@@ -100,12 +106,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         });
     });
 
-    return true; // ✅ <-- CRUCIAL for keeping the message channel open!
+    return true; // Keep message channel open
   }
 
+  // 2. Rebuild context menu
   if (message.type === "rebuild_context_menu") {
     buildMenus();
     sendResponse({ success: true });
   }
-});
 
+  // 3. Open settings/options page
+  if (message.type === "open_options_page") {
+    chrome.runtime.openOptionsPage();
+  }
+});

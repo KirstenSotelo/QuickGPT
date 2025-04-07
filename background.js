@@ -116,7 +116,29 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   // 3. Open settings/options page
-  if (message.type === "open_options_page") {
-    chrome.runtime.openOptionsPage();
-  }
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === "open_options_page") {
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        const currentTab = tabs[0]
+        chrome.tabs.create({
+          url: chrome.runtime.getURL("options.html"),
+          index: currentTab.index + 1
+        })
+      })
+    }
+  })
+  
 });
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === "open_options_page") {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const currentTab = tabs[0]
+      chrome.tabs.create({
+        url: chrome.runtime.getURL("options.html"),
+        index: currentTab.index + 1
+      })
+    })
+  }
+})
+

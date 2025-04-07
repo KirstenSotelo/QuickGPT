@@ -1,150 +1,142 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ChatGPT Widget Settings</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      max-width: 800px;
-    }
-    label {
-      display: block;
-      margin-top: 15px;
-      font-weight: bold;
-    }
-    input, select, textarea {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      box-sizing: border-box;
-    }
-    button {
-      margin-top: 10px;
-      padding: 8px 12px;
-      font-size: 14px;
-      cursor: pointer;
-    }
-    .btn-group {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    .status {
-      font-size: 14px;
-    }
-    .menu-block {
-      border: 1px solid #ccc;
-      background: #f9f9f9;
-      padding: 10px;
-      margin-top: 10px;
-    }
-    .menu-block label {
-      margin-top: 5px;
-      font-weight: normal;
-    }
-    .menu-buttons {
-      margin-top: 10px;
-      display: flex;
-      gap: 8px;
-    }
-  </style>
+  <link rel="stylesheet" href="options.css">
 </head>
 <body>
+  <div class="container">
+    <header>
+      <h1>ChatGPT Widget Settings</h1>
+      <div class="theme-toggle">
+        <label for="theme" class="sr-only">Theme</label>
+        <select id="theme">
+          <option value="dark" selected>🌙 Dark Mode</option>
+          <option value="light">☀️ Light Mode</option>
+        </select>
 
-  <h2>🔧 Set Up Your ChatGPT Assistant</h2>
+        <label for="btn-position">Floating Button Position:</label>
+        <select id="btn-position">
+          <option value="top-left">Top Left</option>
+          <option value="top-right">Top Right</option>
+          <option value="middle-left">Middle Left</option>
+          <option value="middle-right">Middle Right</option>
+          <option value="bottom-left">Bottom Left</option>
+          <option value="bottom-right" selected>Bottom Right</option>
+        </select>
+      </div>
+    </header>
 
-  <p>
-    To use this extension, you need an <strong>OpenAI API key</strong>.
-    <br>
-    Visit <a href="https://platform.openai.com/account/api-keys" target="_blank">platform.openai.com/account/api-keys</a> to create one.
-    <br>
-    Once logged in, click the green <strong>"Create new secret key"</strong> button, then click <strong>"Create secret key"</strong> to copy it.
-    <br><br>
-    <strong>Note:</strong> You must set up billing to use the API (even for GPT-3.5). The minimum top-up is <strong>$5</strong>, which can last for thousands of requests.
-  </p>
+    <main>
+      <section class="card">
+        <h2>🔑 API Configuration</h2>
+        
+        <div class="info-box">
+          <p>
+            To use this extension, you need an <strong>OpenAI API key</strong>.
+            <br>
+            Visit <a href="https://platform.openai.com/account/api-keys" target="_blank">platform.openai.com/account/api-keys</a> to create one.
+            <br>
+            Once logged in, click the green <strong>"Create new secret key"</strong> button, then click <strong>"Create secret key"</strong> to copy it.
+          </p>
+          <p>
+            <strong>Note:</strong> You must set up billing to use the API (even for GPT-3.5). The minimum top-up is <strong>$5</strong>, which can last for thousands of requests.
+          </p>
+        </div>
 
-  <label for="apikey">Your OpenAI API Key:</label>
-  <input type="password" id="apikey" placeholder="sk-..." />
-  <div class="btn-group">
-    <button id="save-key">Save API Key</button>
-    <div id="status-key" class="status"></div>
-  </div>
+        <div class="form-group">
+          <label for="apikey">Your OpenAI API Key:</label>
+          <div class="input-with-button">
+            <input type="password" id="apikey" placeholder="sk-..." />
+            <button id="save-key" class="btn btn-primary">Save API Key</button>
+          </div>
+          <div id="status-key" class="status"></div>
+        </div>
 
-  <label for="model">Choose OpenAI Model:</label>
-  <select id="model">
-    <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Fast & Cheap)</option>
-    <option value="gpt-4o">GPT-4o (Best Quality + Fast)</option>
-    <option value="gpt-4">GPT-4 (Powerful, Slower)</option>
-    <option value="gpt-4-32k">GPT-4-32k (Very Long Context)</option>
-  </select>
-  <p style="font-size: 13px; color: #b94a48;">
-    ⚠️ GPT-4, GPT-4-32k require special access. 
-    If your account is not approved for these models, you may receive an error or fallback to GPT-3.5 Turbo.
-    Make sure you have billing enabled and model access in your OpenAI account dashboard.
-  </p>
+        <div class="form-group">
+          <label for="model">Choose OpenAI Model:</label>
+          <select id="model">
+            <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Fast & Cheap)</option>
+            <option value="gpt-4o">GPT-4o (Best Quality + Fast)</option>
+            <option value="gpt-4">GPT-4 (Powerful, Slower)</option>
+            <option value="gpt-4-32k">GPT-4-32k (Very Long Context)</option>
+          </select>
+          <p class="warning-text">
+            ⚠️ GPT-4, GPT-4-32k require special access. 
+            If your account is not approved for these models, you may receive an error or fallback to GPT-3.5 Turbo.
+            Make sure you have billing enabled and model access in your OpenAI account dashboard.
+          </p>
+          <div class="button-row">
+            <button id="save-model" class="btn">Save Model</button>
+            <button id="save-settings" class="btn btn-primary">Save All Settings</button>
+          </div>
+          <div id="status-model" class="status"></div>
+          <div id="status-settings" class="status"></div>
+        </div>
+      </section>
 
-  <div class="btn-group">
-    <button id="save-model">Save OpenAI Model</button>
-    <div id="status-model" class="status"></div>
-  </div>
+      <section class="card">
+        <h2>💰 Model Pricing</h2>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Model</th>
+                <th>Cost (per 1K tokens)</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>GPT-3.5 Turbo</td>
+                <td>$0.0005 (input), $0.0015 (output)</td>
+                <td>Fast, very cheap — great for general use</td>
+              </tr>
+              <tr>
+                <td>GPT-4o</td>
+                <td>$0.001 (input), $0.005 (output)</td>
+                <td>New default — fast, smart, great value</td>
+              </tr>
+              <tr>
+                <td>GPT-4</td>
+                <td>$0.01 (input), $0.03 (output)</td>
+                <td>Very powerful, slower — ideal for deep reasoning</td>
+              </tr>
+              <tr>
+                <td>GPT-4-32k</td>
+                <td>$0.012 (input), $0.06 (output)</td>
+                <td>Supports large documents and long chats</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
 
-  <div class="btn-group">
-    <button id="save-settings">Save All Settings</button>
-    <div id="status-settings" class="status"></div>
-  </div>
+      <section class="card">
+        <h2>🖱️ Right-Click Menu Actions</h2>
+        <p>
+          You can edit, enable, disable, delete, or add new context menu items.
+          <br>Use <code>*text*</code> in the prompt to represent the selected text.
+        </p>
 
-  <p><strong>Need help choosing a model?</strong></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Model</th>
-        <th>Cost (per 1K tokens)</th>
-        <th>Notes</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>GPT-3.5 Turbo</td>
-        <td>$0.0005 (input), $0.0015 (output)</td>
-        <td>Fast, very cheap — great for general use</td>
-      </tr>
-      <tr>
-        <td>GPT-4o</td>
-        <td>$0.001 (input), $0.005 (output)</td>
-        <td>New default — fast, smart, great value</td>
-      </tr>
-      <tr>
-        <td>GPT-4</td>
-        <td>$0.01 (input), $0.03 (output)</td>
-        <td>Very powerful, slower — ideal for deep reasoning</td>
-      </tr>
-      <tr>
-        <td>GPT-4-32k</td>
-        <td>$0.012 (input), $0.06 (output)</td>
-        <td>Supports large documents and long chats</td>
-      </tr>
-    </tbody>
-  </table>
+        <div id="builtin-actions" class="menu-actions"></div>
 
-  <hr>
+        <div class="button-row">
+          <button id="add-new" class="btn"><span>➕</span> Add New Menu Action</button>
+          <button id="save-context" class="btn btn-primary"><span>💾</span> Save Menu Actions</button>
+        </div>
+        <div id="status-context" class="status"></div>
+      </section>
+    </main>
 
-  <h3>🖱️ Right-Click Menu Actions</h3>
-  <p>
-    You can edit, enable, disable, delete, or add new context menu items.
-    <br>Use <code>*text*</code> in the prompt to represent the selected text.
-  </p>
-
-  <div id="builtin-actions"></div>
-
-  <div class="btn-group">
-    <button id="add-new">➕ Add New Menu Action</button>
-    <button id="save-context">💾 Save Menu Actions</button>
-    <div id="status-context" class="status"></div>
+    <footer>
+      <p>ChatGPT Widget Extension © 2025</p>
+    </footer>
   </div>
 
   <script src="options.js"></script>
 </body>
 </html>
+

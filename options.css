@@ -1,0 +1,320 @@
+:root {
+    --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans",
+      "Helvetica Neue", sans-serif;
+    --border-radius: 8px;
+    --transition: all 0.2s ease;
+  
+    /* Light theme (default) */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f7f7f8;
+    --bg-tertiary: #ececf1;
+    --text-primary: #202123;
+    --text-secondary: #6e6e80;
+    --border-color: #e5e5e5;
+    --accent-color: #10a37f;
+    --accent-hover: #0e8e6d;
+    --card-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    --warning-bg: #fff7e8;
+    --warning-text: #b94a48;
+    --input-bg: #ffffff;
+    --table-header-bg: #f0f0f0;
+    --table-row-hover: #f5f5f5;
+    --menu-block-bg: #f7f7f8;
+  }
+  
+  [data-theme="dark"] {
+    --bg-primary: #202123;
+    --bg-secondary: #343541;
+    --bg-tertiary: #444654;
+    --text-primary: #f1f1f3;
+    --text-secondary: #acacbe;
+    --border-color: #4d4d4f;
+    --accent-color: #10a37f;
+    --accent-hover: #13c79a;
+    --card-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    --warning-bg: #3f2a2a;
+    --warning-text: #ff9999;
+    --input-bg: #343541;
+    --table-header-bg: #343541;
+    --table-row-hover: #3a3a4a;
+    --menu-block-bg: #343541;
+  }
+  
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: var(--font-family);
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.5;
+    transition: var(--transition);
+    padding: 0;
+    margin: 0;
+  }
+  
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  h1 {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  
+  h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .card {
+    background-color: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: var(--card-shadow);
+    border: 1px solid var(--border-color);
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  
+  input,
+  select,
+  textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background-color: var(--input-bg);
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: var(--transition);
+  }
+  
+  input:focus,
+  select:focus,
+  textarea:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px rgba(16, 163, 127, 0.2);
+  }
+  
+  .input-with-button {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .input-with-button input {
+    flex: 1;
+  }
+  
+  .btn {
+    padding: 10px 16px;
+    border: none;
+    border-radius: var(--border-radius);
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  
+  .btn:hover {
+    background-color: var(--border-color);
+  }
+  
+  .btn-primary {
+    background-color: var(--accent-color);
+    color: white;
+  }
+  
+  .btn-primary:hover {
+    background-color: var(--accent-hover);
+  }
+  
+  .button-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+  }
+  
+  .info-box {
+    background-color: var(--bg-tertiary);
+    border-radius: var(--border-radius);
+    padding: 16px;
+    margin-bottom: 20px;
+    font-size: 14px;
+  }
+  
+  .warning-text {
+    background-color: var(--warning-bg);
+    color: var(--warning-text);
+    padding: 12px;
+    border-radius: var(--border-radius);
+    margin-top: 8px;
+    font-size: 13px;
+  }
+  
+  a {
+    color: var(--accent-color);
+    text-decoration: none;
+  }
+  
+  a:hover {
+    text-decoration: underline;
+  }
+  
+  .status {
+    margin-top: 8px;
+    min-height: 20px;
+    font-size: 14px;
+  }
+  
+  .table-container {
+    overflow-x: auto;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  
+  th {
+    background-color: var(--table-header-bg);
+    text-align: left;
+    padding: 12px;
+    font-weight: 600;
+  }
+  
+  td {
+    padding: 12px;
+    border-top: 1px solid var(--border-color);
+  }
+  
+  tr:hover {
+    background-color: var(--table-row-hover);
+  }
+  
+  code {
+    background-color: var(--bg-tertiary);
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 13px;
+  }
+  
+  .menu-actions {
+    margin-bottom: 20px;
+  }
+  
+  .menu-block {
+    background-color: var(--menu-block-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  
+  .menu-block label {
+    margin-bottom: 6px;
+  }
+  
+  .menu-block textarea {
+    resize: vertical;
+    min-height: 60px;
+  }
+  
+  .menu-buttons {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 12px;
+  }
+  
+  .delete-btn {
+    background-color: #e25c5c;
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: var(--transition);
+  }
+  
+  .delete-btn:hover {
+    background-color: #d44747;
+  }
+  
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+  
+  footer {
+    text-align: center;
+    padding: 20px 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+    border-top: 1px solid var(--border-color);
+    margin-top: 40px;
+  }
+  
+  @media (max-width: 600px) {
+    .container {
+      padding: 16px;
+    }
+  
+    .card {
+      padding: 16px;
+    }
+  
+    .input-with-button {
+      flex-direction: column;
+    }
+  
+    .button-row {
+      flex-direction: column;
+    }
+  }
+  
+  

@@ -8,6 +8,10 @@ chrome.storage.onChanged.addListener((changes, area) => {
   if (area === "local" && changes.theme_mode) {
     document.documentElement.setAttribute("data-theme", changes.theme_mode.newValue)
   }
+
+  if (changes.openai_model) {
+    updateSettingsLabel(changes.openai_model.newValue);
+  }
 })
 
 // ===== Create UI =====
@@ -147,9 +151,21 @@ button.addEventListener("click", () => {
   if (popup.style.display === "flex") document.getElementById("chatgpt-input").focus()
 })
 
-document.getElementById("chatgpt-settings").addEventListener("click", () => {
-  chrome.runtime.sendMessage({ type: "open_options_page" })
-})
+const settingsBtn = document.getElementById("chatgpt-settings");
+
+function updateSettingsLabel(model) {
+  const friendlyName = model?.startsWith("gpt-") ? model.replace("gpt-", "") : (model || "Unknown");
+  settingsBtn.textContent = `⚙️ Settings – ChatGPT ${friendlyName}`;
+}
+
+
+chrome.storage.local.get("openai_model", (data) => {
+  updateSettingsLabel(data.openai_model);
+});
+
+settingsBtn.addEventListener("click", () => {
+  chrome.runtime.sendMessage({ type: "open_options_page" });
+});
 
 
 // ===== Modal =====
@@ -231,6 +247,13 @@ chrome.runtime.onMessage.addListener((msg) => {
     sendPrompt(msg.prompt)
   }
 })
+
+chrome.runtime.onMessage.addListener((msg) => {
+  if (msg.type === "model_changed") {
+    updateSettingsLabel(msg.model);
+  }
+});
+
 
 // ===== Clear & Copy Buttons =====
 document.getElementById("chatgpt-clear").addEventListener("click", () => {

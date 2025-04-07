@@ -78,11 +78,14 @@ document.addEventListener("DOMContentLoaded", () => {
   })
 
   document.getElementById("save-model").addEventListener("click", () => {
-    const model = document.getElementById("model").value
+    const model = document.getElementById("model").value;
     chrome.storage.local.set({ openai_model: model }, () => {
-      showStatus("Saved to " + model, "status-model")
-    })
-  })
+      showStatus("Saved to " + model, "status-model");
+      // ✅ Notify content script immediately
+      chrome.runtime.sendMessage({ type: "model_changed", model });
+    });
+  });
+  
 
   document.getElementById("save-settings").addEventListener("click", () => {
     const key = document.getElementById("apikey").value.trim()

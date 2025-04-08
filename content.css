@@ -121,6 +121,11 @@
   color: rgba(236, 236, 241, 0.6);
 }
 
+
+:root[data-theme="light"] #chatgpt-input::placeholder {
+  color: rgba(85, 85, 85, 0.6);
+}
+
 /* Send Button */
 #chatgpt-send {
   background-color: var(--chatgpt-button);
@@ -251,12 +256,12 @@
 }
 
 :root[data-theme="light"] #chatgpt-stop {
-  background-color: rgba(0, 0, 0, 0.05);
-  color: #202123;
+  background-color: #32343ebe;
+  color: #ffffff;
 }
 
 :root[data-theme="light"] #chatgpt-stop:hover {
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: #32343e70;
 }
 
 /* Scrollbars */

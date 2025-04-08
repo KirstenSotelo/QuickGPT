@@ -1,24 +1,50 @@
 function buildMenus() {
-  chrome.storage.local.get(["context_menu_items"], (data) => {
-    const enabledIds = Array.isArray(data.context_menu_items) ? data.context_menu_items : [];
+  chrome.contextMenus.removeAll(() => {
+    chrome.storage.local.get(["context_menu_items"], (data) => {
+      const enabledIds = Array.isArray(data.context_menu_items) ? data.context_menu_items : [];
 
-    chrome.storage.local.get(["builtin_context_items"], (data2) => {
-      const allItems = Array.isArray(data2.builtin_context_items) ? data2.builtin_context_items : [];
+      chrome.storage.local.get(["builtin_context_items"], (data2) => {
+        const allItems = Array.isArray(data2.builtin_context_items) ? data2.builtin_context_items : [];
 
-      allItems.forEach(item => {
-        if (enabledIds.includes(item.id)) {
-          chrome.contextMenus.create({
-            id: item.id,
-            title: item.label,
-            contexts: ["selection"]
-          });
-        }
+        allItems.forEach(item => {
+          if (enabledIds.includes(item.id)) {
+            chrome.contextMenus.create({
+              id: item.id,
+              title: item.label,
+              contexts: ["selection"]
+            });
+          }
+        });
       });
     });
   });
 }
 
-chrome.runtime.onInstalled.addListener(buildMenus);
+// 🔧 Initialize default menu items on first install
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.storage.local.get(["builtin_context_items"], (data) => {
+    if (!Array.isArray(data.builtin_context_items)) {
+      const defaultItems = [
+        { id: "define", label: "Define this", template: 'Define clearly:\n"*text*"' },
+        { id: "reword", label: "Reword this", template: 'Reword for clarity:\n"*text*"' },
+        { id: "summarize", label: "Summarize this", template: 'Summarize:\n"*text*"' },
+        { id: "explain5", label: "Explain like I’m 5", template: 'Explain like I’m five:\n"*text*"' },
+        { id: "formal", label: "Make this formal", template: 'Make this more professional:\n"*text*"' },
+        { id: "casual", label: "Make this casual", template: 'Make this casual:\n"*text*"' },
+        { id: "grammar", label: "Fix grammar", template: 'Fix grammar:\n"*text*"' },
+        { id: "continue", label: "Continue this", template: 'Continue:\n"*text*"' }
+      ];
+
+      chrome.storage.local.set({
+        builtin_context_items: defaultItems,
+        context_menu_items: defaultItems.map(i => i.id)
+      }, buildMenus);
+    } else {
+      buildMenus();
+    }
+  });
+});
+
 chrome.runtime.onStartup.addListener(buildMenus);
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
@@ -79,7 +105,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         .catch(() => sendResponse({ success: false, error: "Request failed." }));
       });
 
-      return true; // Keep channel open
+      return true;
 
     case "open_options_page":
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -89,8 +115,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         });
       });
       break;
-
-    default:
-      break;
   }
 });
+
+// ✅ Ensure menus are present on manual reload too
+buildMenus();

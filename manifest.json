@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "ChatGPT Browser Widget",
-  "version": "1.3",
-  "description": "Quick AI assistant in your browser",
+  "name": "QuickGPT - ChatGPT Browser Widget",
+  "version": "3.0",
+  "description": "Quick ChatGPT assistant in your browser",
   "permissions": ["storage", "contextMenus", "scripting", "activeTab", "notifications"],
   "background": {
     "service_worker": "background.js"

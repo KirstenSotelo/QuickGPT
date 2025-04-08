@@ -2,7 +2,7 @@ console.log("ChatGPT content script loaded.")
 
 // ===== Theme =====
 chrome.storage.local.get("theme_mode", (data) => {
-  document.documentElement.setAttribute("data-theme", data.theme_mode || "light")
+  document.documentElement.setAttribute("data-theme", data.theme_mode || "dark")
 })
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === "local" && changes.theme_mode) {
@@ -30,6 +30,7 @@ popup.innerHTML = `
   <div id="chatgpt-response-wrapper">
     <div id="chatgpt-response">Response will appear here.</div>
       <div class="chatgpt-response-actions">
+      <button id="chatgpt-stop" style="display:none; position:absolute; bottom:10px; right:10px;">⏹</button>
         <div class="response-right-buttons">
           <div class="left">
             <button id="chatgpt-settings" title="Settings">⚙️ Settings</button>
@@ -154,7 +155,7 @@ button.addEventListener("click", () => {
 const settingsBtn = document.getElementById("chatgpt-settings");
 
 function updateSettingsLabel(model) {
-  const friendlyName = model?.startsWith("gpt-") ? model.replace("gpt-", "") : (model || "Unknown");
+  const friendlyName = model?.startsWith("gpt-") ? model.replace("gpt-", "") : (model || "3.5-turbo");
   settingsBtn.textContent = `⚙️ Settings – ChatGPT ${friendlyName}`;
 }
 
@@ -180,12 +181,21 @@ function showApiKeyModal() {
 }
 
 // ===== Typing & Scroll Logic =====
+let isTyping = false
 let typingCancelled = false
+const stopBtn = document.getElementById("chatgpt-stop")
+
 function typeResponse(text, element, speed = 20) {
   element.textContent = ""
   let i = 0
   typingCancelled = false
   let userScrolledUp = false
+
+  const sendBtn = document.getElementById("chatgpt-send")
+  sendBtn.disabled = true
+  isTyping = true
+
+  stopBtn.style.display = "flex" // ✅ Show stop button
 
   const onScroll = () => {
     const atBottom = Math.abs(element.scrollHeight - element.scrollTop - element.clientHeight) < 10
@@ -194,17 +204,37 @@ function typeResponse(text, element, speed = 20) {
   element.addEventListener("scroll", onScroll)
 
   function type() {
-    if (typingCancelled) return element.removeEventListener("scroll", onScroll)
+    if (typingCancelled) {
+      element.removeEventListener("scroll", onScroll)
+      sendBtn.disabled = false
+      isTyping = false
+      stopBtn.style.display = "none" // ✅ Hide on cancel
+      return
+    }
+
     if (i < text.length) {
       element.textContent += text.charAt(i++)
       if (!userScrolledUp) element.scrollTop = element.scrollHeight
       setTimeout(type, speed)
     } else {
       element.removeEventListener("scroll", onScroll)
+      sendBtn.disabled = false
+      isTyping = false
+      stopBtn.style.display = "none" // ✅ Hide when done
     }
   }
+
   type()
 }
+
+stopBtn.addEventListener("click", () => {
+  typingCancelled = true
+  stopBtn.style.display = "none"
+})
+
+
+
+
 
 // ===== Chat Logic =====
 function sendPrompt(promptText) {
@@ -213,27 +243,41 @@ function sendPrompt(promptText) {
   const sendBtn = document.getElementById("chatgpt-send")
 
   input.value = promptText
-  response.textContent = "Thinking..."
+  let dotCount = 0
+  const maxDots = 3
+  response.textContent = "Thinking"
+  const thinkingInterval = setInterval(() => {
+    dotCount = (dotCount + 1) % (maxDots + 1)
+    response.textContent = "Thinking" + ".".repeat(dotCount)
+  }, 500)
+
   sendBtn.disabled = true
 
   chrome.runtime.sendMessage({ type: "chatgpt_query", prompt: promptText }, (res) => {
+    clearInterval(thinkingInterval)
     if (chrome.runtime.lastError) {
       response.textContent = "Extension error."
+      sendBtn.disabled = false  // ❌ REMOVE THIS
     } else if (res.success) {
-      typeResponse(res.reply, response)
+      typeResponse(res.reply, response)  // ✅ This will re-enable later
     } else {
       response.textContent = "Error: " + (res.error || "Unknown error.")
       if ((res.error || "").includes("No API key")) showApiKeyModal()
+      sendBtn.disabled = false  // ❌ REMOVE THIS
     }
-    sendBtn.disabled = false
   })
+  
 }
 
+
 document.getElementById("chatgpt-send").addEventListener("click", () => {
+  if (isTyping) return // prevent sending during typing
+
   const val = document.getElementById("chatgpt-input").value.trim()
   if (val) sendPrompt(val)
   else document.getElementById("chatgpt-response").textContent = "Please enter a message."
 })
+
 document.getElementById("chatgpt-input").addEventListener("keydown", (e) => {
   if (e.key === "Enter" && !e.shiftKey) {
     e.preventDefault()

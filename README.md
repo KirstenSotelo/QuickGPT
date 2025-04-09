@@ -2,6 +2,8 @@
 
 **QuickGPT** is a lightweight and customizable ChatGPT-powered assistant that lives in your browser as a floating widget and right-click menu. Designed for productivity and clarity, it lets you get instant AI help on any webpage—without breaking your flow.
 
+**Official Website**: https://www.cs.torontomu.ca/~ksotelo/QuickGPT/
+
 ---
 
 ## ✨ Features
